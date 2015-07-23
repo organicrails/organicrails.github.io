@@ -3,4 +3,4 @@ layout: default
 title: Contact
 ---
 
-# Contact Page
+Hello World This is the contact page
