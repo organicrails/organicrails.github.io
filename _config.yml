@@ -5,7 +5,7 @@
 
 # If you are building a simple GitHub user page (username.github.io) then use these settings:
 url: "https://github.com/organicrails/"
-baseurl: "/organicrails"
+baseurl: ""
 
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
@@ -28,8 +28,8 @@ avatar: "/img/avatar-icon.png"
 # List of links in the navigation bar
 navbar-links:
   Home: ""
-  #About Me: "aboutme"
-  #Contact: "contact"
+  About Me: "aboutme"
+  Contact: "contact"
   
 # --- Footer options --- #
 
