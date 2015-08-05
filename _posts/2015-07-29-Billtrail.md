@@ -6,22 +6,20 @@ subtitle: MongoDB Integration w/ Ruby 2.1.3 and Rails 4.2.3
 
 # [BillTrail REPO](https://github.com/organicrails/billtrail)
 
-One thing that seems to occur among every social circle is that no one can keep track of who paid for how much when splitting the bill. Whether it's a simple restaurant check, or a grand total sum of a week-long road trip, keeping track of every individual spendings is pretty irritating. The most troublesome part, however, is definitely trying to sum up all the totals and to figure out just exactly how much each person owes. 
+One thing that seems to occur all the time (at least to me) is that no one can keep track of who spotted who when splitting the bill. Whether it's a simple restaurant check, or a grand total sum of a week-long road trip, it's hard to keep track every time someone lends someone else money. And that is pretty irritating. 
 
-With that said, for Project 2, I've decided to create a simple application that can keep track of the total amount spent on a given bill by person. **This application will keep track of how much everyone pitch in on a given bill, sums up everyone's spending, and return how much each person should have paid when the bill is evenly splitted among the group.** 
+With that said, for Project 2, I've decided to create a simple application that can keep track of the total amount spent on a given bill. **This application will keep track of how much everyone pitch in on a given bill, sums up everyone's spending, and return how much how much the grand total is in the end. And guess what? We're going to experiment with MongoDB in this project.** 
 
-And guess what? We're going to experiment using MongoDB for this project. 
+If you have never heard of MongoDB, or have no idea what a NoSQL database is, [this article](http://searchdatamanagement.techtarget.com/definition/MongoDB) breaks down what MongoDB is, and [this other article](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails) explains what NoSQL is. I suggest give both of them a quick read, as they are pretty informative. 
 
-If you have never heard of MongoDB, or have no idea what NoSQL means, [This article](http://searchdatamanagement.techtarget.com/definition/MongoDB) breaks down what MongoDB is, and [this other article](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails) explains what NoSQL is. I suggest give both of them a quick read, as they are prtty informative. 
-
-If you are looking for a [TLDR](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails), MongoDB basically allows us to work with _collections_ and _documents_ rather than the standard database tables and rows. Documents are stored in JSON hashes, so anything that can be represented in JSON is valid. Furthermore, MongoDB is _schemaless_, which means there is no need to call a migration every time a new column is added to the database. With MongoDB, there are no requirements for the data structure within the documents. 
+If you are looking for a [TLDR](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails), MongoDB basically allows us to work with _collections_ and _documents_ rather than the standard database tables and rows. Documents are stored in JSON hashes, so anything that can be represented in JSON is a valid entry.. Furthermore, MongoDB is _schemaless_, which means there is no need to call a migration every time a new column is added to the database. With MongoDB, there are no rigid requirements for the data structure within the documents, as you can add and remove fields as you please.
 
 Feeling Ready? Let's get started.
 
 
 ### Installing HomeBrew and MongoDB
 
-Before we start creating a new rails project, we need to install MongoDB on the system first. To make the steps as painless as possible, let's utilize [HomeBrew](http://brew.sh/) if you are on OSX, an insanely awesome package manager that takes care of installation for you. (if you're on Windows, [the official guide](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/) is the best resource I found for installing MongoDB on your systems.) Following the HomeBrew page to install HomeBrew.
+Before we start creating a new rails project, we need to install MongoDB on the system first. To make the steps as painless as possible, let's utilize [HomeBrew](http://brew.sh/) if you are on OSX. Homebrew is an insanely awesome package manager that takes care of installation for you. (if you're on Windows, [the MongoDB official guide](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/) is the best resource I found for installing MongoDB). Follow the HomeBrew installation instructions to install HomeBrew.
 
 After installing HomeBrew, we can then proceed with installing MongoDB. Open up your terminal and enter the following:
 
@@ -29,7 +27,7 @@ After installing HomeBrew, we can then proceed with installing MongoDB. Open up 
 
 And you're done. Was that not ridiculously easy?
 
-Based on the [same article as the TLDR above](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails), we don't need to allow MongoDB to start whenever your system starts. Let's take control of our lives and simply ignore all the post installation messages from MongoDB. Instead use the following to start MongoDB at your will
+Based on the [same article as the TLDR above](http://kerrizor.com/blog/2014/04/02/quick-intro-to-mongodb-in-rails), we don't need to allow MongoDB to start whenever your system starts. Let's take control of our lives and simply ignore all the post-installation messages from MongoDB. Instead use the following console command to start MongoDB at your will.
 
 `brew services start mongodb`
 
@@ -37,28 +35,31 @@ and the following to stop MongoDB
 
 `brew services stop mongodb`
 
-**If your bew services command does not work**, please head to [this SO post](http://apple.stackexchange.com/questions/150300/need-help-using-homebrew-services-command) and following the SECOND (aka the non-accepted) answer by _kbrock_. I ran into the same issue and his solution fixed it for me. 
+**If your brew services command does not work**, please head to [this SO post](http://apple.stackexchange.com/questions/150300/need-help-using-homebrew-services-command) and following the **SECOND** (the non-accepted) answer by _kbrock_. I ran into the same issue and his solution fixed it for me. 
 
-When everything looks safe and sound, let's start up our mongoDB server. You should see the following message "_==> Successfully started `mongodb` (label: homebrew.mxcl.mongodb)_"
+When everything looks safe and sound, start up the mongoDB server using the command above. You should see the following message "_==> Successfully started `mongodb` (label: homebrew.mxcl.mongodb)_"
 
 Now we are ready to play around with MongoDB.
 
 ### Just The Basics
 
-Now we are ready to create a new rails project. For this application, let's name it BillTrail. For BillTrail, we want to install everything but the active record portion of the application. Active Record is the Model in the MVC, but since we are using MongoDB as our primary database, we don't need the default SQLite3 database. If you are not familiar with the term, [check out this link](http://guides.rubyonrails.org/active_record_basics.html). Because of that, we are going to skip the active record when creating BillTrail. 
+Now we are ready to create a new rails project. For this application, let's name it BillTrail. When creating the application, we want to install everything except the active record portion of the application. Active Record is the Model in the MVC, but since we are using MongoDB as our primary database, we don't need the default SQLite3 database. If you are not familiar with the term, [check out this link](http://guides.rubyonrails.org/active_record_basics.html). Let's include the `--skip-active-record` tag when creating BillTrail.
 
 `rails new billtrail --skip-active-record`
 
-Take a look at the _GEMFILE_, and you'll see the _sqlite_ is not part of the gem this time, which is what we wanted. For this application, we really only need one gem, _mongoid_, to use MongoDB in our app, but I also love throwing _HAML_ in there. Let's add both into our _GEMFILE_.
+Take a look at the _GEMFILE_, and notice that see the _sqlite_ is not part of the gem this time, which means that right now BillTrail does not have a default database. We'll fix that with the inclusion of MongoDB. To include MongoDB, we really only need one gem, _mongoid_, to use MongoDB in our app. However,I also love throwing _HAML_ in there for stylistic purposes. Let's add both into our _GEMFILE_.
 
 [Mongoid](https://github.com/mongodb/mongoid)is "an ODM (Object-Document-Mapper) framework for MongoDB in Ruby", which essentially allow us to use MongoDB in our ruby projects. [HAML](http://haml.info/) just makes everything looks **much** nicer, which I always appreciate. 
 
+**_GEMFILE_**
 {% highlight ruby %}
+...
 gem 'mongoid', '~> 4.0.2' 
 gem 'haml', '~> 4.0.6'    
+...
 {% endhighlight %}
 
-After installing the gems above, run `rails generate mongoid:config` and Mongoid will create a _config/mongoid.yml_. Feel free to take a quick look, and take note of _database: billtrail_development_, which we will run across later. But we do not need to change anything about it at this point. 
+After installing the gems (`bundle install`), run `rails generate mongoid:config` and Mongoid will create a _config/mongoid.yml_. Feel free to take a quick look, and take note of _database: billtrail_development_, which we will run across later. There is no need to change anything at this point. 
 
 Let's think about what our application needs first. Our most basic premise is probably a list of names, and how much money that person spent. To showcase MongoDB and its schemaless protocols, let's simply create a _Bill_ scaffold with the names first. 
 
@@ -75,7 +76,7 @@ end
 
 {% endhighlight%}
 
-Notice anything different? If we were not using MongoDB, but just the default SQLite, it might look something like this instead
+Notice anything different? If we were not using MongoDB, but rather the default DB, SQLite, it might look something like this instead
 
 {% highlight ruby %}
 class Bill < ActiveRecord::Base
@@ -83,7 +84,7 @@ class Bill < ActiveRecord::Base
 end
 {% endhighlight%}
 
-Notice how with MongoDB, there is no need to call any migrations, because we did not create any table rows or columns. Instead, we created a **Bill Collection**, and within the collection we currently have a **name document**. To make sure everything is working correctly, let's redirect the root page and create a simple record. If you want a more detailed explanation, [check out this article](http://www.w3resource.com/mongodb/databases-documents-collections.php)
+Notice how with MongoDB, there is no need to call any migrations, because we did not create any table rows or columns. Instead, we created a **Bill Collection**, and within the collection we currently have a **name document**. With the inclusion of `field :name, type: String` through Mongoid, there already exists a field _name_ that's ready for input. To make sure everything is working correctly, try redirecting to the root page and create a simple record. If you want a more detailed explanation, [check out this article](http://www.w3resource.com/mongodb/databases-documents-collections.php)
 
 **_routes.rb_**
 {% highlight ruby %}
@@ -93,15 +94,15 @@ Rails.application.routes.draw do
 end
 {% endhighlight %}
 
-Try to create a new Bill, enter a name, and everything should work flawlessly. After creating a new bill though, take a look at the URL 
+At the index page, try to create a new Bill, enter a name, and everything should work flawlessly. Notice the URL after creating a new BIll. It should look something similar to
 
 `http://localhost:3000/bills/55bbe3f46a61638630000000`
 
-As oppose to the usual
+as oppose to the usual
 
 `http://localhost:3000/bills/1`
 
-MongoDB does not keep track of the documents with ID in numerical increment orders. Instead, every document field within MongoDB has its own unique [ObjectID](http://docs.mongodb.org/manual/reference/object-id/), and in my case, my object ID for my name is "55bbe3f46a61638630000000". We'll do something pretty interesting with the ObjectIDs later, but for now, let's add the other fields to our Bill. To add additional documents to our Bill collection, all we need to do add the following two lines. 
+MongoDB does not keep track of the documents with ID in numerical increment orders. Instead, every document field within MongoDB has its own unique [ObjectID](http://docs.mongodb.org/manual/reference/object-id/). In my case, the object ID for my first name field is "55bbe3f46a61638630000000". We'll do something pretty interesting with the ObjectIDs later, but for now, let's add the other fields to our Bill. To add additional documents to our Bill collection, mainly a **dollar** and **cent** field. To accomplish that, all we need to do add the following two lines. 
 
 {% highlight ruby %}
 
@@ -114,12 +115,13 @@ end
 
 {% endhighlight%}
 
-And that is it. Once again, no migration or anything is required. Mongoid will automatically the map newly added fields to their respective documents. 
+And that is it. Once again, no migration or anything is required. Mongoid will automatically map the newly created fields to their respective documents. 
 
-You may be wondering why I separated the monetary values to its dollar and cent component. The reason is because [MongoDB does not have decimal support](http://stackoverflow.com/questions/11541939/mongodb-what-about-decimal-type-of-value). So if we want to store something in the form of "$DDD.CC", that is not allowed. Instead, let's just break it down to dollars and cents, and store them both as integers. 
+You may be wondering why I separated the monetary values to its dollar and cent component. The reason is because [MongoDB does not have decimal support](http://stackoverflow.com/questions/11541939/mongodb-what-about-decimal-type-of-value). So if we want to store something in the form of "$DDD.CC", that is not allowed. Instead, let's just break it down to dollars and cents, and store them both as integers.
 
-To check that this is indeed all we need to do to add more fields to the Bill collections, let's fix up the following...
-[Here is a great tool to convert ERB to HAML](http://html2haml.herokuapp.com/)
+To check that this is indeed all we need to do to add more fields to the Bill collections, let's update the following files....
+
+[By the way, here is a great tool to convert ERB to HAML](http://html2haml.herokuapp.com/)
 
 **_bills_controller.rb_**
 
@@ -184,10 +186,10 @@ end
 
 {% endhighlight%}
 
-Now head over to `locahost:3000`, create a new bill, enter the name, dollar, and cent values, and you should see everything working fine. Awesome huh.
+Now head over to `locahost:3000`, create a new bill, enter the name, dollar, and cent values, and everything should be displaying gloriously. Awesome huh.
 
 ### MongoDB Shell
-Similar to how rails have the _rails console_, it is not surprising that mongoDB has something similar. To utilize the mongoDB "shell", let's first take a look this line `database: billtrail_development` in our **_config/mongoid.yml_**. This line tells you how to access the MongoDB shell, which we will now call by entering
+Similar to how rails have the _rails console_, it is not surprising that mongoDB has something similar. To utilize the mongoDB "shell", let's first take a look this line `database: billtrail_development` in our **_config/mongoid.yml_**. This line tells you how to access the MongoDB shell, which we will now call by in the console.
 
 `mongo billtrail_development` 
 
@@ -201,7 +203,7 @@ First thing first, let's check out our collections.
   system.indexes
 {% endhighlight %}
 
-Great, seems like bills is indeed one of our collections. Next, let's take a look at our documents. The syntax is `db.[collection].find()`, but we will append the `.pretty()` method to make it format much nicer.
+Great, seems like bills is indeed one of our collections. Next, let's take a look at our documents. The syntax is `db.[collection].find()`, but we will append the `.pretty()` method to make the format much nicer.
 
 {% highlight ruby %}
   >db.bills.find().pretty()
@@ -224,16 +226,18 @@ As shown above, I got three documents within my Bills collection. First one with
 
 To exit the shell, call **CTRL+C**
 
+I will continue to use the MongoDB Shell throughout the application for my own sake, so I won't be writing anymore related to the Mongo Shell. But I strongly suggest you to play around with it and take a look at it once in a while. It's always good to have a general visualization of how your application is stored in the DB!
+
 ### A Pivot in the Application
 
-Now that we have a basic understand of MongoDB and how it plays in our rails application, let's rethink our application a bit. At this point, I realized that the documents within Bill doesn't make much sense structurally. Right now, we are simply throwing names and numbers inside the Bill collection without any purpose. What we want is perhaps something along the lines of a relationship model. We can have a _Bill_ with perhaps a _EventName_, and within that _Bill_ exists many _Transactions_ that keep track of the payer and the values. Ultimately, this is what we want to achieve 
+Now that we have a basic understand of MongoDB and how it plays in our rails application, let's rethink our application a bit. At this point, I realized that the documents within Bill doesn't make much sense structurally. Right now, we are simply throwing names and numbers inside the Bill collection without any purpose. What we want is perhaps something along the lines of a relationship-model between the bill itself and other types of stored information. For example, We can have a _Bill_ with a of _EventName_, and within that _Bill_ exists many _Transactions_ that keep track of the payer and the values. To visualize it, the following is what we might want to achieve 
 
 
 {% highlight ruby %}
  {
     "_id" : ObjectId("55bbe71f6a61638630000001"),
     "Event_name" : "Dinner Bill",
-    "Transactions" [{ 
+    "Transactions" : [{ 
                      "payer": "Bob",
                      "dollar": 10
                      "cent": 50
@@ -262,9 +266,9 @@ First thing first, let's simplify our index page. We don't need all that extra i
 {% endhighlight%}
 
 
-Let's take advantage of how flexible MongoDB is at adjusting fields. In a RDBMS, there would be a need to update the `Bill.rb` model with new tables and columns and all that, but not with a NoSQL DB such as MongoDB. To update `Bill.rb`, let's first add an _event_name_ field, along with its validation for presence. Afterwards, let's embed a [1-N relationship for mongoid](http://mongoid.org/en/mongoid/docs/relations.html) for a new _transactions_ model. 
+Let's take advantage of how flexible MongoDB is at adjusting fields. In a RDBMS, there would be a need to update the `Bill.rb` model with new tables and columns and all that, but not with a NoSQL DB such as MongoDB. To update `Bill.rb`, simply delete everything, and restart by adding an _event_name_ field, along with its validation for presence. Afterwards, let's include a [1-N relationship for mongoid](http://mongoid.org/en/mongoid/docs/relations.html) for a new _transactions_ model. 
 
-Note two things. One is how how similar the syntax is for defining relationships. In regular rails, we would use _has_many_, and in mongoid we use _embeds_many_. Second is that the validation for presence is the exact syntax. This is because Mongoid is awesome enough to [includes ActiveModel::Validations to supply the basic validation](http://mongoid.org/en/mongoid/docs/validation.html), so developers would feel a lot more comfortable working with it rather than adapting a whole new systems of syntax. 
+Note two things. One is how how similar the syntax is for defining relationships. In regular rails, we would use _has_many_, and in mongoid we use _embeds_many_. Second is that the validation for presence is the exact syntax. This is because Mongoid is awesome enough to [include ActiveModel::Validations to supply the basic validation](http://mongoid.org/en/mongoid/docs/validation.html), so developers would feel a lot more comfortable working with it rather than adapting a whole new systems of syntax. 
 
 **_app/models/bill.rb_**
 
@@ -280,7 +284,7 @@ class Bill
 end
 {% endhighlight %}
 
-Before we proceed with the creation of a **Transactions** model, remember to update your _bills_controller_, _view/bills/show.html.haml_, _view/bills/index.html.haml_, and _view/bills/_form.html.haml_ with the newly udpated *event_name* field
+Before we proceed with the creation of a **Transactions** model, remember to update your **_bills\_controller_**, **_view/bills/show.html.haml_**, **_view/bills/index.html.haml_**, and **_view/bills/\_form.html.haml_** with the newly updated *event_name* field.
 
 
 Now, with the declaration of `embeds_many :transactions`, let's create a transactions model with 
@@ -303,11 +307,11 @@ end
 
 {% endhighlight%}
 
-In the `Transaction.rb` model, we first establish a relationship with the `Bill.rb` model by declaring `embedded_in :bill`. Three new fields are then added: *payer*, *dollar*, and *cent*. Furthermore, we also valdiated the presence of those three fields, and limited the characters of *cent* to only two characters. 
+In the `Transaction.rb` model, we first establish a relationship with the `Bill.rb` model by declaring `embedded_in :bill`. Three new, though familiar, fields are then added: *payer*, *dollar*, and *cent*. Furthermore, we also validate the presence of those three fields, and limited the characters of *cent* to only two characters (anything more would be a dollar!). 
 
 Let's create the _controller_ and the _view_ now. 
 
-For this application, let's simply show the form on the show page of each Bill, since we want to add a new transaction specific to each bill anyways. With that said, we only need a **create** and **destroy** method in the `Transactions.rb` controller.
+For this application, let's simply show the all the forms on the show page of each Bill, since we want to add a new transaction specific to each bill anyways. With that said, we only need a **create** and **destroy** method in the `Transactions.rb` controller.
 
 
 `rails g controller Transactions`
@@ -390,7 +394,7 @@ And as for the view...
 
 {% endhighlight %}
 
-Last but not least, don't be like me and forget to declare your **Transactions** resources in your `routes.rb` (took me a while to figure out the error...). 
+Last but not least, don't be like me and forget to declare your **Transactions** resources in your `routes.rb` (took me a while to realize the error...). 
 
 **_routes.rb_**
 {% highlight ruby %}
@@ -402,12 +406,12 @@ Rails.application.routes.draw do
 end
 {% endhighlight %}
 
-Now head over to your index page, create an Event, input some values for the Transactions, and the show page should display the payers name and how much the payer paid!
+Now head over to your index page, create an Event, input some values for a Transaction, and the bill#show page should display the payers name and how much the payer paid!
 
 
 ### Define our own UUID. 
 
-One nice little feature of using MongoDB is its internal use of unique IDs when declaring objects. Since each object has its own unique IDs, the users can simply note the object ID somewhere and retrieve the information they need on the website by recalling the IDs. I am a fan of UUID in general, since users can have quick access to their own pages, and it is much safer than incremental numbers that everyone can blindly guess. 
+One nice little feature of using MongoDB is its internal use of unique IDs when declaring objects. Since each object has its own unique IDs, users can simply note the object ID somewhere and retrieve the same page they need on the website by recalling the IDs. I am a fan of UUID in general, since users can have quick access to their own pages, and it is much safer than incremental numbers that everyone can blindly guess. 
 
 However, it is very unlikely that anyone is going to memorize the 24 characters in a MongoDB Object ID. Let's be real, even copy-pasting such long string of characters is too much to ask for some users. Let's change that (because we can). 
 
@@ -453,7 +457,7 @@ To achieve part two, let's start by adding a field **urlID** to the _Bill_ model
 
 After that, add some simple validations to make sure **urlID** is unique (don't want duplications) and both fields are non-empty.
 
-This is all easily achievable with the [following solution by styliii](http://stackoverflow.com/questions/4744446/mongo-ids-leads-to-scary-urls)
+This is all easily achievable with the [this SO help by styliii](http://stackoverflow.com/questions/4744446/mongo-ids-leads-to-scary-urls)
 
 **_model/bill.rb_**
 {% highlight ruby %}
@@ -478,7 +482,7 @@ end
 
 {% endhighlight %}
 
-As always, also remember to update your strong parameters within the bills controller and add the form fields in your bills view page. Below I slightly modified the labels for the form displayed to give a bit more information. It's not the most visually pleasing method of doing so, but it gets the point across for this project.
+As always, also remember to update your strong parameters within the **_bills controller_** and add the form fields in your **_bills view_** page. Below I slightly modified the labels for the form displayed to give a bit more information. It's not the most visually pleasing form labels, but it gets the point across for this project.
 
 **_views/bills/_form.html.haml_**
 {% highlight ruby %}
@@ -805,7 +809,7 @@ With this information, we want to extract the **dollar* and **cent** at each ind
 
 Let's continue with the code to see how that is achieved.
 
-`totals = Hash.new { |hash, key| hash[key] = { dollar: 0, cent: 0 } }` is without doubt the most interesting (though most difficult) concept I learned during this project. When I first created this method, I wanted a way to call something similar to _method\_name[payer\_name][dollar]_ to return the dollar values, and similarly for the cent values. With that logic, I needed a hash within a hash, but I had no idea how to create that. [Here is my SO that got me to the right direction](http://stackoverflow.com/questions/31711304/ruby-add-a-nested-key-to-an-existing-hash?noredirect=1#comment51393980_31711304). 
+`totals = Hash.new { |hash, key| hash[key] = { dollar: 0, cent: 0 } }` is without doubt the most interesting concept I learned during this project. When I first created this method, I wanted a way to call something similar to _method\_name[payer\_name][dollar]_ to return the dollar values, and similarly for the cent values. With that logic, I needed a hash within a hash, but I had no idea how to create that. [Here is my SO that got me to the right direction](http://stackoverflow.com/questions/31711304/ruby-add-a-nested-key-to-an-existing-hash?noredirect=1#comment51393980_31711304). 
 
 Basically (to the best of my understanding), _Hash.new_ can [take different parameters](http://ruby-doc.org/core-2.1.1/Hash.html), and for my purpose the parameter needs to be a Hash itself. By passing `{|hash, key| hash[key] = { dollar: 0, cent: 0 }` as the parameter, it's declaring that **totals** to have two arguments, **hash** and **key** ([here is a great SO on blocks if you are still confused what they do](http://stackoverflow.com/questions/4911353/best-explanation-of-ruby-blocks)), in the form of _hash[key]_. These two arguments will form a hash, with **Hash** will representing the key, and **key** as the value. Within the **key** value, it will set the default values of 0 to both dollar and cent. 
 
@@ -932,15 +936,16 @@ If you have any comments or questions, please don't hesitate to post them below.
 ### Some Self Reflection
 Second application done within two weeks, it's been a productive month. Throughout the development process, I kept on asking myself "should I attempt the underlying [subset-sum](http://www.geeksforgeeks.org/dynamic-programming-subset-sum-problem/) problem and calculate how much each person should pay/receive?" After all, it is the logical progression of the app. In the end, I chose not to for two reasons. 
 
-First is that I actually did not plan on spending this much time creating and experimenting with adding all the sums and returning individual sums. My initial plan was to experiment with MongoDB as much as possible, play around with it, and share my experiences. I somehow got too caught up trying to make this project a more "complete" application, and the result is what we made (not complaining though! Glad that I learned _helper\_method_ and _inject()_ along the way!).
+First is that I actually did not plan on spending this much time creating and experimenting with adding all the sums and returning individual sums. My initial plan was to experiment with MongoDB as much as possible, play around with it, and share my experiences. I somehow got too caught up trying to make this project a more "complete" application, and the result is what we made (not complaining though! Glad that I learned _helper\_method_ , _inject()_ , and all that other good stuff along the way.).
 
-Second is that I believe there are much more appropriate places for the subset-problem, especially on another stack. MongoDB is not ideal for monetary calculations due to the Integer only limitation. If I do choose to dive into the next step, I am afraid that as oppose to only focusing on the subset-sum problem, I will also spend a great deal of time trying to work around the Integer limitation. 
+Second is that I believe there are much more appropriate places for the subset-sum problem, especially on another stack. MongoDB is not ideal for monetary calculations due to the Integer only limitation. If I do choose to dive into the next step, I am afraid that as oppose to primarily only focusing on the subset-sum problem, I will also spend a great deal of time trying to work around the Integer limitation. 
 
 With that said, let's save that challenge for next time.
 
 Again, I apologize for the lack of testing for this one (but definitely next one!).
 
-No CSS again. I am thinking of adding some simple bootstrap next time, so that hopefully it'll look better and not as plain. 
+No CSS again. I am thinking of adding some simple bootstrap next time, so that hopefully it'll look better and not as plain.
+
 Thanks again for reading, see you next time! 
 
 
