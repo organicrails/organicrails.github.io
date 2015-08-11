@@ -942,8 +942,6 @@ Second is that I believe there are much more appropriate places for the subset-s
 
 With that said, let's save that challenge for next time.
 
-Again, I apologize for the lack of testing for this one (but definitely next one!).
-
 No CSS again. I am thinking of adding some simple bootstrap next time, so that hopefully it'll look better and not as plain.
 
 Thanks again for reading, see you next time! 
