@@ -942,7 +942,7 @@ Second is that I believe there are much more appropriate places for the subset-s
 
 With that said, let's save that challenge for next time.
 
-No CSS again. I am thinking of adding some simple bootstrap next time, so that hopefully it'll look better and not as plain.
+No CSS again. I am thinking of adding some simple bootstrap next time if needed, so that hopefully it'll look better and not as plain. But for simple applications like these I still prefer to focus on the rails aspects more. 
 
 Thanks again for reading, see you next time! 
 
