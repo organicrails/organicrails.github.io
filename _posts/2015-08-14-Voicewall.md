@@ -5,11 +5,11 @@ subtitle: Intro to Testing with RSpec, Capybara, and FactoryGirl
 ---
 #[VoiceWall Repo](https://github.com/organicrails/voicewall)
 
-After pretty much a year of learning Rails, I think it's really time for me to actually learn how to test. When I first started trying to write tests, I remember how daunting it was. For me, the entire testing suite appeared to be another language entirely. There were syntaxes that I had to memorize and new conventions that I had to follow. All the testing tutorials that I came across pretty much says "This is what you write if you want to test feature X, and this is what you write if you want to test feature Y." They were helpful -- if I want to test feature X or Y. But more than that I just want to have a general understanding of what to do  without the tutorials. 
+After pretty much a year of learning Rails, I think it's really time for me to actually learn how to test. When I first started trying to write tests, I remember how daunting it was. For me, the entire testing suite appeared to be another language entirely. There were syntaxes that I had to memorize and new conventions that I had to follow. All the testing tutorials that I came across pretty much shows "This is what you write if you want to test feature X, and this is what you write if you want to test feature Y." They were helpful -- if I only want to test feature X or Y. But more than that I want to have a general understanding of what to test without the tutorials.
 
-Personally, I think it's extremely important for me to actually learn the syntax first. Sure, I may not be able to test extremely in depth at first, but at least I'll have a solid understanding of the foundation and know what I am actually doing. To achieve that, I've decided to create an extremely simple and bare-bone application, and write my tests around the application. This ensures that if my test does fail at some point, the problem will probably be with my tests and not with the application itself.
+Personally, I think it's extremely important to actually learn the syntax in the beginning. Sure, I may not be able to test extremely in depth at first, but at least I'll have a solid understanding of the foundation and know what I am actually doing. To achieve that, I've decided to create an extremely simple and bare-bone application, and write my tests around the application. This ensures that if my test does fail at some point, the problem will most likely be with my tests and not with the application itself.
 
-**VoiceWall is a simple CRUD application that allows anyone to post opinions on anything. We will be writing test around this application! We will be using RSpec, Capybara, and FatoryGirl to test our application.**
+**VoiceWall is a simple CRUD application that allows anyone to post opinions on anything (though it is really just a CRUD app). We will be writing test around this application! Testing suites will include RSpec, Capybara, and FatoryGirl to test our application.**
 
 ### Intro to RSpec
 
@@ -51,13 +51,14 @@ Run `rails g simple_form:install` to install simple_form, and run `rails generat
 
 In this application, we will be testing the applications in the following order - Model, Controller, and Requests. Before we proceed, you can delete the **_test_** directory from your application. We will not be using that directory, but rather the **_spec_** directory instead. 
 
-The following tests are taken and modified from [everydayrails](http://everydayrails.com/2012/04/07/testing-series-rspec-controllers.html). 
+The following tests are taken, modified, and updated from [everydayrails](http://everydayrails.com/2012/04/07/testing-series-rspec-controllers.html). 
 
 ### Testing the Model
 
 Let's begin by creating a **_Voice_** model. Within a Voice, there will be a **title** describing the voice, and an **opinion** block describing the opinions. 
 
 `rails g model Voice title:string opinion:text`
+
 `rake db:migrate`
 
 Notice the following
@@ -72,7 +73,7 @@ invoke      factory_girl
 create        spec/factories/voices.rb
 {% endhighlight %}
 
-Aside from the _active\_record_, the model generator also automatically created the **_voice\_spec.rb_** and FactoryGirl's **_voices.rb_**. Let's take a look at these two files
+Aside from the typical _active\_record_ files, the model generator also automatically created the **_voice\_spec.rb_** and FactoryGirl's **_voices.rb_**. Let's take a look at these two files
 
 **_spec\_factories\_voices.rb_**
 
@@ -85,7 +86,7 @@ FactoryGirl.define do
 end
 {% endhighlight%}
 
-When we created the model, FactoryGirl took note that within a Voice object, title is a string and opinion is a text. Without having to do anything, FactoryGirl automatically generated a factory **:vioce** which includes a title "MyString " and opinion "MyText". Throughout our application, we will make use of the symbol **:voice** to test the Voice objects. Now, whenever we want to create a Voice object somewhere in our spec, we can call something similar to the following ` FactoryGirl.create(:voice)`, and a Voice object would be initialized within the test. 
+When we created the model, FactoryGirl took note that within a Voice object, title is a string and opinion is a text. Without having to do anything, FactoryGirl automatically generated a Voice factory **:vioce** which includes a title "MyString " and opinion "MyText". Throughout our application, we will make use of **:voice** to test the Voice objects. Now, whenever we want to create a Voice object somewhere in our specs, we can call something similar to `FactoryGirl.create(:voice)`, and a Voice object would be initialized within that test. Don't worry if you're feeling a bit confused, there will be plenty of examples in a bit! 
 
 **spec\_models\_voice_spec.rb**
 
@@ -97,7 +98,11 @@ RSpec.describe Voice, type: :model do
 end
 {% endhighlight %}
 
-Very self-explanatory. The `RSpec.describe Voice do ... end` block infers that the following block of tests will be testing the Voice model. Let's write three simple tests for the Voice model to get a basic idea of how RSpec works. The first will test the voice factory within FactoryGirl, second will test that a title must be present, and third will test that opinion must be present. These tests are selected because the solutions to these tests are simple, so we can focus more on how RSpec works rather than actually figuring out how to code to make the tests pass.
+Very self-explanatory. The `RSpec.describe Voice do ... end` block infers that the following block of tests will be testing the Voice model. 
+
+The `pending...` line simply reminds the user to add more tests. Note that while pending is not a test itself, it will show up as a yellow warning when running RSpec later. For that reason, simply remove all pendings from all spec files to ensure all tests will run green. 
+
+Let's write three simple tests for the Voice model to get a basic idea of how RSpec works. The first will test the voice factory within FactoryGirl, second will test that a title must be present, and third will test that opinion must be present.The implementations to these tests are simple, so we can focus more on how RSpec works rather than actually figuring out how the code will make the tests pass.
 
 **spec\_models\_voice_spec.rb**
 {% highlight ruby %}
@@ -124,7 +129,11 @@ it "has a valid Voice factory" do
 end
 {% endhighlight %}
 
-RSpec utilizes a lot of human-understandable languages. Reading the test out loud, we see that this test is checking whether a valid Voice factory has been created. RSpec utilizes `expect(...).to` a lot. In some other tutorials, you might see `should` instead, which is now deprecated. Here, `expect(FactoryGirl.create(:voice)).to` is expecting the creation of **:voice** to be something. Reading on, this test is expecting the creation of **:voice** to be valid, aka there is indeed a Voice factory that has been created.
+RSpec utilizes a lot of human-readable languages. Reading the test out loud, we see that this test is checking whether a valid Voice factory has been created. RSpec utilizes `expect(...).to` a lot.
+
+In some other tutorials, you might see `should` instead, which is now deprecated. 
+
+Here, `expect(FactoryGirl.create(:voice)).to` is expecting the creation of **:voice** to be something. Reading on, this test is expecting the creation of **:voice** to be valid, aka there is indeed a Voice factory that has been created.
 
 {% highlight ruby%}
 it "is invalid without title" do
@@ -132,7 +141,7 @@ it "is invalid without title" do
 end
 {% endhighlight %}
 
-The test to check whether a title is present is also very similar to the one above. Here, we utilizes the `FactoryGirl.build` command, which will create a factory but not save it in the database. If you want a better understanding of create vs build when using FacotryGirl, [check out this SO](http://stackoverflow.com/questions/14098031/whats-the-difference-between-the-build-and-create-methods-in-factorygirl). This time, we use the `expect(...).not_to`, along with `be_valid` to check the invalidity of something. To check that all Voices without titles shall not pass, we need to create a Voice object with an invalid title. To achieve this, we can call upon the **:voice** factory that was automatically created earlier, but specify that the title must be nil. The result is `FactoryGirl.build(:voice, title: nil)`. After that, simply plug it into the rest of the test to form `expect(FactoryGirl.build(:voice, title: nil)).not_to be_valid`
+The test to check whether a title is present is also very similar to the one above. Here, we utilizes the `FactoryGirl.build` command, which will create a factory but not save it in the database. If you want a better understanding of _create_ vs _build_ when using FacotryGirl, [check out this SO](http://stackoverflow.com/questions/14098031/whats-the-difference-between-the-build-and-create-methods-in-factorygirl). This time, we use the `expect(...).not_to`, along with `be_valid` to check the _invalidity_ of something. To check that all Voices without titles shall not pass, we need to create a Voice object with an invalid title. To achieve this, we can call upon the **:voice** factory that was automatically created earlier, but specify that the title must be nil. The result is `FactoryGirl.build(:voice, title: nil)`. After that, simply plug it into the rest of the test to form `expect(FactoryGirl.build(:voice, title: nil)).not_to be_valid`
 
 
 {% highlight ruby%}
@@ -195,11 +204,11 @@ and (don't forget!!) add `resources :voices` to your **_routes.rb_**, as well se
 
 Like the creation of model above, the generator also automatically created the spec files. 
 
-For the controller tests, we're going to test the most basic functions of all seven controller methods. This will once again ensures that we are focusing on how to write the controller specs and not the controller itself. In the following controller tests, some require the views of each action. Feel free to create your own views for this project, but if you do not want to, you can always copy my simple (but un-styled) views folder from the VoiceWall Repo above. 
+For the controller tests, we're going to test the most basic functions of all seven controller methods. This will once again ensures that we are focusing on how to write the controller specs and not the controller itself. In the following controller tests, some require the views of each action. Feel free to create your own views for this project, but if you do not want to, you can always copy my simple (but un-styled) views folder from the [VoiceWall Repo](https://github.com/organicrails/voicewall).
 
-Furthermore, the voices controller also simply dictates basic CRUD actions, nothing too fancy. If you want to write your own (and maybe alter some tests along the way for your own purpose), that is perfectly. Otherwise, the following is what I have for the controller. 
+Furthermore, the voices controller also simply dictates basic CRUD actions, nothing too fancy. If you want to write your own (and maybe alter some tests along the way for your own purpose), that is perfectly okay. Otherwise, the following is what I have for the controller. 
 
-If you wish, you can wait to write each method after writing the test to get the full RED-GREEN-REFRACTOR cycle from TDD. But for my purpose (and not for best practice), I simply want to explain RSpec syntax and techniques, so I'll include the controller first. This will once again ensures that if I do get a red test, it will be because of the RSpec that I wrote and not because of the controller.
+If you wish, you can wait to write each method after writing the test to get the full RED-GREEN-REFRACTOR cycle from TDD. But for my purpose (and not for best practice, or how TDD is in general), I simply want to explain RSpec syntax and techniques, so I'll include the controller first (thus skipping the "failure" portion entirely). This will once again ensures that if I do get a red test, it will be because of the RSpec that I wrote and not because of the controller.
 
 **_app\_controllers\_voices\_controllers.rb_**
 
@@ -259,13 +268,13 @@ end
 
 Let's get started!
 
-PS: If, at any point, you see a "pending" when running `rspec spec`, (6 examples, 0 failures, 1 pending), simply delete the pending file as long as it's not used (should be the helper in most cases)!
+Reminder: If, at any point, you see a "pending" when running `rspec spec`, (6 examples, 0 failures, 1 pending), simply delete the pending line!
 
 #### INDEX Specs
 
 What do we need to test in our index specs? How about let's see if it renders the correct view (index page), as well as whether or not there exists an array of Voices in our index method (`@voices = Voice.all`).
 
-It's always good practice to list out all the potential tests that you might want to test in "it...do" blocks. For our index method, we currently have two "it...do" blocks that we want to implement, like the following. I'll be skipping showing the "it...do" blocks for the rest of the specs, but just remember this practice can only help you organizing your specs!
+It's always good practice to list out all the potential tests that you might want to test in "it...do" blocks. For our index method, we currently have two "it...do" blocks that we want to implement (shown below). I'll be skipping showing the "it...do" blocks first for the rest of the specs, but just remember that this practice can only help you better organizing your specs!
 
 **_spec/controllers/voices\_controller\_spec.rb_**
 
@@ -310,7 +319,7 @@ end
 
 For "create an array of voices", first create a Voice factory and store it in the variable **voice**. Next, we need to get the current action, which is index. With `get :index`, we let the spec know that the current test is dealing with the index action. Last, we need to check for the array of Voices. In our controller index method, we stored the `Voice.all` within a `@voices` instance variable. How do we check that? Luckily, RSPec has the `assigns()` method. 
 
-In short, `assigns()` simply [checks the value of an instance variable](http://stackoverflow.com/questions/8616508/what-does-assigns) within the controller. Since our instance variable is named `@voices` in our index controller, we simply have to call `assigns(:voices)` to perform validation tests on it. The rest is relatively self explanatory. `expect(assigns(:voices)).to eq([voice])` expects `@voices` to be an array of voice. 
+In short, `assigns()` simply [checks the value of an instance variable](http://stackoverflow.com/questions/8616508/what-does-assigns) within the controller. Since our instance variable is named `@voices` in our index controller, we simply have to call `assigns(:voices)` to perform validation tests on it. The rest is relatively self explanatory. `expect(assigns(:voices)).to eq([voice])` expects `@voices` to be (FYI, `eq` means equals!)an array of voice. 
 
 For "render the index template", the test is even simpler. Like the previous test, we let the test to know it is the index action that we're testing by calling `get :index`. Next, we except the page to render the index page. This can all be done in one line with `expect(response).to render_template :index`. 
 
@@ -377,11 +386,11 @@ However, in the **create** tests, we also start to see something new. The most a
 
 In our **create** action's tests, our "big picture" is described as "#create". Within "#create", we have two contexts. One is the creation of a Voice object with VALID input, and the other is with an INVALID input. Within these two contexts exist their own separate tests specific to that describe + context. 
 
-Let's begin to understand the tests. First, we have the `it "creates and increases Voice count by 1"` test. This test is essentially checking whether or not the Voice object, if given valid inputs, is actually saved within the database. We know that by successfully saving a Voice object, the count of Voices will be raised by 1. This test utilizes such information. 
+Let's take a look the tests. First, we have the `it "creates and increases Voice count by 1"` test. This test is essentially checking whether or not the Voice object, if given valid inputs, is actually saved within the database. We know that by successfully saving a Voice object, the count of Voices will be raised by 1. This test utilizes such information. 
 
 Immediately, we see a `expect{...}` block. Within the block, we first call `post :create` to tell the test that this is retrieving information on the POST action **create**. We then need to create a voice to simulate the create action. In this case, we can use the _attributes\_for_ method from RSpec to create and retrieve a hash of the attributes within `:voice`. [This SO](http://stackoverflow.com/questions/13150272/meaning-for-attributes-for-in-factorygirl-and-rspec-testing) was essential in my understanding of what `attributes_for` was really doing. Remember, all the code so far was within the `expect{...}` block, because what are we expecting? We're expecting that upon saving, the count of the Voice objects will increases by 1. This is simulated by calling `.to change(Voice, :count).by(1)` after the expect block. 
 
-The "redirects to show page" test should a familiar sight by now. We're simply doing the same thing we did before, expecting the response to _redirect\_to_ (note it's not _render\_template_) **Voice.last**. Why is it **Voice.last**? Because after we created and saved, the last Voice object within the database would be the one we just created. 
+The "redirects to show page" test should a familiar sight by now. We're simply doing the same thing we did before, expecting the response to _redirect\_to_ (note it's not _render\_template_) **Voice.last**. Why is it **Voice.last**? Because after we created and saved, the last Voice object within the database would be the one we just created.
 
 We now approach our second context, "with invalid inputs". As the description suggests, every test within this context is to test Voices with invalid inputs. 
 
@@ -665,7 +674,7 @@ end
 
 #### Request Specs for Creating New Voices
 
-What does a user have to do in order to create a new Voice? The general steps will probably be the following: Go to the home page, click on New Voice link, fill in the form, and be redirected to the show page with all the information. Capybara can simulate the actions like so
+What does a user have to do in order to create a new Voice? The general steps will probably be the following: Go to the home page, click on New Voice link, fill in the form, and be redirected to the show page with all the information. Capybara can easily simulate the steps with the following specs
 
 **_spec/features/voice\_request\_spec.rb_**
 
@@ -697,7 +706,7 @@ The test "Add new voice and displays the results" will do the following. It will
 
 Now, after creating the voice in this test, we expect to see the show page to display both the title and the opinion. This is simulate with the `have_content` function. How does the spec knows that we're on the show page? Because when the spec ran `click_button "Create Voice"`, it automatically follows the path to wherever the **create** function redirects to, and in this case it's the show page. 
 
-We can even get fancier and more in-dept with the testing by testing the HTML tags on the page. Since we declared that all title should have a **h2** tag, we can use the `within 'h2' do...end` block to test the title. The `within` block also works on other HTML and CSS tags, so the testing scope is limitless!
+We can even get fancier and more in-dept with the testing by testing the HTML tags on the page. Since we declared that all title should have a **h2** tag, we can use the `within 'h2' do...end` block to test the tags within the titles. The `within` block also works on other HTML and CSS tags, so the testing scope is limitless!
 
 #### Request Specs for Editing Voices
 
@@ -791,7 +800,7 @@ Thank you again for joining me today, and I'll see you next time
 
 
 ### Some Self Reflection
-Nothing much to say this time, I think the entire process went by pretty smoothly. Even though the majority of the tests were taken from another site, I still learned a lot (especially regarding TDD foundations). For future testing walkthroughs, I think I'll focus more on how to create the tests by myself, as I can't follow other testing templates forever. After understanding the syntaxes, understanding what to test on future apps is the logical next step, and shouldn't be too difficult. 
+Nothing much to say this time, I think the entire process went by pretty smoothly. Even though the majority of the tests were taken from another site, I still learned a lot (especially regarding TDD foundations). For future testing walkthroughs, I think I'll focus more on how to create the tests by myself, as I can't follow other testing templates forever. After understanding the syntaxes, knowing what to test in future apps is the logical next step, and hopefully wouldn't be too difficult. 
 
 
 
