@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Project 3 - VoiceWall. Say What You Wanna Say, As Long As You Test Them All First.
-subtitle: Intro to Testing with RSpec, Capybara, and FactoryGirl
+subtitle: Intro to Testing with RSpec, Capybara, and FactoryGirl w/ Ruby 2.1.3 and Rails 4.2.4
 ---
 #[VoiceWall Repo](https://github.com/organicrails/voicewall)
 
@@ -799,8 +799,12 @@ And we're all done!!
 Thank you again for joining me today, and I'll see you next time
 
 
-### Some Self Reflection
-Nothing much to say this time, I think the entire process went by pretty smoothly. Even though the majority of the tests were taken from another site, I still learned a lot (especially regarding TDD foundations). For future testing walkthroughs, I think I'll focus more on how to create the tests by myself, as I can't follow other testing templates forever. After understanding the syntaxes, knowing what to test in future apps is the logical next step, and hopefully wouldn't be too difficult. 
+###Some Self Reflection
+Nothing much to say this time, I think the entire process went by pretty smoothly. Even though the majority of the tests were taken from another site, I still learned a lot (especially regarding TDD foundations). For future testing walkthroughs, I think I'll focus more on how to create the tests by myself, as I can't follow other testing templates forever. After understanding the syntaxes, knowing what to test in future apps is the logical next step, and hopefully wouldn't be too difficult.
+
+
+
+
 
 
 
